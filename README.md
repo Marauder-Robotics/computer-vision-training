@@ -17,10 +17,10 @@ The Marauder CV Pipeline is a production-ready computer vision system designed f
 
 ### Key Features
 
-- 🎯 **36 Species Detection**: Critical (20), Important (9), General (7)
+- 🎯 **Species Detection**: Critical, Important, General
 - 🔄 **Advanced Ensemble**: 3-variant models (recall, balanced, precision)
 - 🚀 **ByteTrack Integration**: Accurate object tracking and counting
-- ⚡ **Energy Optimized**: 14.4-18 Wh/day on Jetson Nano
+- ⚡ **Energy Optimized**: ~14.4-18 Wh/day on Jetson Nano
 - 📊 **Test-Time Augmentation**: Improved accuracy through TTA
 - 🎓 **Self-Supervised Learning**: MoCo V3 pretraining
 - 🔧 **TensorRT Export**: FP16 optimization for edge deployment
@@ -147,7 +147,8 @@ marauder-cv-pipeline/
 │   ├── 2_baseline_yolo.py       # Baseline YOLOv8 training
 │   ├── 2_active_learning.py     # Active learning iteration
 │   ├── 4_critical_species.py    # Critical species specialization
-│   ├── 5a_ensemble_training_nano.py   # 3-variant ensemble
+│   ├── 5a_ensemble_training_nano.py   # 3-variant ensemble for nano
+│   ├── 5b_ensemble_training_shoreside.py   # 6-variant ensemble for gcp compute
 │   ├── 6_multiscale_training.py # Multi-scale training
 │   ├── 7_tta_calibration.py     # TTA and confidence calibration
 │   └── 8_tensorrt_export.py     # TensorRT FP16 export
@@ -346,20 +347,7 @@ python test_endpoint.py --endpoint ENDPOINT_URL
 
 ---
 
-## 🐠 Species List
-
-### Critical Species (IDs 0-19) - Immediate Alert
-Lionfish, Purple/Green/Red/Long-spined Sea Urchin, White/Red/Pinto Abalone, Sheepshead, Kelp Crabs, Giant Pacific Octopus, Trout, Sunflower Sea Star, Wrasse, Oyster Drill, Red Snapper, Eel Grass, Rockfish
-
-### Important Species (IDs 20-28)
-Grouper, Oyster, Salmon, Sea Star, Sea Slug, Eel, Shrimp, Jellyfish, Seahorse
-
-### General Species (IDs 29-35)
-Shark, Sea Turtle, Sea Lion, Sea Otter, Swordfish, Whale, Reef Fish
-
----
-
-## ⚡ Energy Budget
+## ⚡ Energy Budget Estimate
 
 **Target**: 40 Wh/day for CV inference
 
@@ -370,38 +358,6 @@ Shark, Sea Turtle, Sea Lion, Sea Otter, Swordfish, Whale, Reef Fish
 - **Ensemble**: 3 models
 - **Daily Inferences**: 129,600
 - **Energy**: 14.4 Wh/day (YOLOv8m) - 18.0 Wh/day (YOLOv8l)
-
----
-
-## 🤝 Contributing
-
-This is a production system. For improvements:
-1. Fork the repository
-2. Create feature branch
-3. Test thoroughly
-4. Submit pull request
-
----
-
-## 📝 License
-
-[Specify License]
-
----
-
-## 🙏 Acknowledgments
-
-- **Fathomnet**: Marine biodiversity dataset
-- **Deepfish**: Underwater fish dataset
-- **Ultralytics**: YOLO implementation
-- **Supervision**: ByteTrack tracking
-- **Paperspace**: Training infrastructure
-
----
-
-## 📧 Contact
-
-For questions or support, contact: [Your Contact Info]
 
 ---
 
@@ -416,7 +372,3 @@ For questions or support, contact: [Your Contact Info]
 | Latency | <200ms | <100ms |
 
 ---
-
-**Status**: Production Ready ✅
-**Version**: 1.0.0
-**Last Updated**: November 2025
