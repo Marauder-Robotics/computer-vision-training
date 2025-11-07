@@ -143,15 +143,15 @@ marauder-cv-pipeline/
 │       ├── mindy_services_handler.py # Annotation export/import
 │       └── active_learner.py         # Uncertainty sampling
 ├── training/                        # Complete training pipeline
-│   ├── 1_ssl_pretrain.py        # MoCo V3 self-supervised learning
-│   ├── 2_baseline_yolo.py       # Baseline YOLOv8 training
-│   ├── 2_active_learning.py     # Active learning iteration
-│   ├── 4_critical_species.py    # Critical species specialization
-│   ├── 5a_ensemble_training_nano.py   # 3-variant ensemble for nano
-│   ├── 5b_ensemble_training_shoreside.py   # 6-variant ensemble for gcp compute
-│   ├── 6_multiscale_training.py # Multi-scale training
-│   ├── 7_tta_calibration.py     # TTA and confidence calibration
-│   └── 8_tensorrt_export.py     # TensorRT FP16 export
+│   ├── 1_ssl_pretrain.py                    # MoCo V3 self-supervised learning
+│   ├── 2_baseline_yolo.py                   # Baseline YOLOv8 training
+│   ├── 2_active_learning.py                 # Active learning iteration
+│   ├── 4_critical_species.py                # Critical species specialization
+│   ├── 5a_ensemble_training_nano.py         # 3-variant ensemble for nano
+│   ├── 5b_ensemble_training_shoreside.py    # 6-variant ensemble for gcp compute
+│   ├── 6_multiscale_training.py             # Multi-scale training
+│   ├── 7_tta_calibration.py                 # TTA and confidence calibration
+│   └── 8_tensorrt_export.py                 # TensorRT FP16 export
 ├── inference/                       # Inference pipelines
 │   ├── nano_inference.py            # Jetson Nano pipeline
 │   ├── shore_inference.py           # GCP dual ensemble pipeline
