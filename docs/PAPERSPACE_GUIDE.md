@@ -21,8 +21,12 @@
 ## Editing Codebase
 
 1. Open Jupyterlab in DigitalOcean and make edits as needed
-2. Push changes, in terminal:
-    - git push origin branch-name
+2. Push changes
+    - In terminal:
+        - git push origin branch-name
+    - JupyterLab:
+        - if logged in, will be able to use UI to push to branches
+        - main protected, so cannot push directly to main (need to create PR in GitHub to add to main)
     
 ## Running files
 
