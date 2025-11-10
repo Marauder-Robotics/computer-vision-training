@@ -281,10 +281,10 @@ logging:
     
 # Data Paths
 paths:
-  data_root: "/workspace/data"
-  fathomnet: "/workspace/data/fathomnet"
-  deepfish: "/workspace/data/deepfish"
-  marauder: "/workspace/data/marauder"
-  outputs: "/workspace/outputs"
-  checkpoints: "/workspace/checkpoints"
-  logs: "/workspace/logs"
+  data_root: "/notebooks/marauder-do-bucket"
+  fathomnet: "/notebooks/marauder-do-bucket/images/fathomnet"
+  deepfish: "/notebooks/marauder-do-bucket/images/deepfish"
+  marauder: "/notebooks/marauder-do-bucket/images/marauder"
+  outputs: "/notebooks/marauder-do-bucket/training/outputs"
+  checkpoints: "/notebooks/marauder-do-bucket/training/checkpoints"
+  logs: "/notebooks/marauder-do-bucket/training/logs"
