@@ -389,14 +389,10 @@ class SSLTrainer:
 
 def main():
     parser = argparse.ArgumentParser(description='SSL Pretraining with MoCo V3')
-    parser.add_argument('--config', type=str, default='config/training_config.yaml',
-                       help='Training config path')
-    parser.add_argument('--data-dir', type=str, required=True,
-                       help='Directory with unlabeled images')
-    parser.add_argument('--output', type=str, default='outputs/1_ssl',
-                       help='Output directory')
-    parser.add_argument('--resume', type=str, default=None,
-                       help='Resume from checkpoint')
+    parser.add_argument('--config', type=str, default='config/training_config.yaml', help='Training config path')
+    parser.add_argument('--data-dir', type=str, required=True, help='Directory with unlabeled images')
+    parser.add_argument('--output', type=str, default='outputs/1_ssl', help='Output directory')
+    parser.add_argument('--resume', type=str, default=None, help='Resume from checkpoint')
     
     args = parser.parse_args()
     
