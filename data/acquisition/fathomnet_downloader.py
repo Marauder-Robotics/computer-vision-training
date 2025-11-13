@@ -74,6 +74,7 @@ class FathomNetDownloader:
         self.stats = {
             'total_downloaded': 0,
             'total_labels': 0,
+            'total_metadata_files': 0,
             'total_failed': 0,
             'concepts_processed': [],
             'start_time': datetime.now(timezone.utc).isoformat()
@@ -228,8 +229,6 @@ class FathomNetDownloader:
             # Fetch image details
             for img_data in concept_images:
                 img_dict = vars(img_data)
-                print(type(img_dict))
-                print(img_dict)
                 try:
                     if img_dict and img_dict.get('url'):
                         all_images.append({
