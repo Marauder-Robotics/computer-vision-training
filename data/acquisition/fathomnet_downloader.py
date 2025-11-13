@@ -293,8 +293,6 @@ class FathomNetDownloader:
         """Convert bounding boxes to YOLO format"""
         # Get boxes
         boxes = img.get('boundingBoxes')
-        logger.info(f"Boxes for: {img.get('uuid')}")
-        print(boxes)
 
         # Get image dimensions
         metadata = img.get('metadata')
@@ -307,6 +305,8 @@ class FathomNetDownloader:
         
         yolo_lines = []
         for box in boxes:
+            logger.info(f"Box for: {img.get('uuid')}")
+            print(box)
             # Get bounding box coordinates
             x = box.get('x', 0)
             y = box.get('y', 0)
