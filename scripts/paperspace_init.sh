@@ -264,6 +264,7 @@ else:
 
 # Step 11: Create Jupyter kernel
 print_status "Creating Jupyter kernel..."
+python -m pip install ipykernel
 python -m ipykernel install --user --name=$VENV_NAME --display-name="Marauder CV"
 
 # Step 12: Final instructions
