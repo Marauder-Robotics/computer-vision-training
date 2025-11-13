@@ -27,7 +27,6 @@ from fathomnet.api import boundingboxes, images
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    exc_info=True,
     format='%(asctime)s - %(name)s - {%(pathname)s:%(lineno)d} - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
