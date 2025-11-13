@@ -17,7 +17,7 @@ The Marauder CV Pipeline is a production-ready computer vision system designed f
 
 ### Key Features
 
-- 🎯 **Species Detection**: 36 species (20 critical, 9 important, 7 general)
+- 🎯 **Initial Species Detection**: 36 species (20 critical, 9 important, 7 general)
 - 🔄 **Advanced Ensemble**: 3-variant nano models + 6-variant shore models
 - 🚀 **ByteTrack Integration**: Accurate object tracking and counting
 - ⚡ **Energy Optimized**: ~14.4-18 Wh/day on Jetson Nano
