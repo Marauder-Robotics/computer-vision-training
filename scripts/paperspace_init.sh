@@ -262,7 +262,7 @@ else:
     print('✗ No CUDA devices found')
 "
 
-# Step 11: Create Jupyter kernel
+# Step 11: Create Jupyter kernel-
 print_status "Creating Jupyter kernel..."
 python -m pip install ipykernel
 python -m ipykernel install --user --name=$VENV_NAME --display-name="Marauder CV"
