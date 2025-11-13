@@ -19,6 +19,7 @@ from PIL import Image
 import time
 import yaml
 from pathlib import Path
+from datetime import timezone
 
 import requests
 from fathomnet.api import boundingboxes, images
