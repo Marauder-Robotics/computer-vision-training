@@ -212,7 +212,7 @@ class FathomNetDownloader:
                             'uuid': img_dict.get('uuid'),
                             'url': img_dict.get('url'),
                             'concept': concept,
-                            'boundingBoxes': vars(img_dict.get('boundingBoxes')),
+                            'boundingBoxes': asdict(img_dict.get('boundingBoxes')),
                             'metadata': {
                                 'latitude': img_dict.get('latitude'),
                                 'longitude': img_dict.get('longitude'),
@@ -385,7 +385,7 @@ class FathomNetDownloader:
         result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0}
 
         print(img)
-        
+
         # Define output paths with matching names
         safe_name = img.get('uuid').replace('/', '_')
         img_path = self.images_path / f"{safe_name}.jpg"
