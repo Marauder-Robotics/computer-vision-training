@@ -209,7 +209,7 @@ marauder-cv-pipeline/
 
 The training pipeline consists of preprocessing (Step 0) followed by 8 training steps:
 
-### Step 0: Preprocessing
+### Step 0: Preprocessing (REQUIRED) ⚡ NEW
 - **Hybrid Preprocessing**: CLAHE, dehazing, color correction
 - **Batch Processing**: Configurable batch sizes with checkpoints
 - **Resume Capability**: Handles Paperspace 6-hour time limits
@@ -662,6 +662,16 @@ python scripts/validate_species_mapping.py --strict
 # Run quick test to isolate issue
 ./scripts/test_data_pipeline.sh --quick
 ```
+
+---
+
+## 📄 License
+
+This project is developed for Marauder Robotics. All rights reserved.
+
+## 🤝 Contributing
+
+For questions or contributions, contact the Marauder Robotics team.
 
 ---
 
