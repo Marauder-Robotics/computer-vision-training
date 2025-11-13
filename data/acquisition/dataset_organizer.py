@@ -680,23 +680,23 @@ def main():
         description="Organize datasets for Marauder CV training",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Scan all sources and generate report
-  python dataset_organizer.py --scan-only
-  
-  # Organize by priority and create splits
-  python dataset_organizer.py --all
-  
-  # Only organize, don't create splits
-  python dataset_organizer.py --organize
-  
-  # Resume from previous run
-  python dataset_organizer.py --all --resume
-  
-  # Use file copying instead of symlinks
-  python dataset_organizer.py --all --no-symlink
-        """
-    )
+            Examples:
+            # Scan all sources and generate report
+            python dataset_organizer.py --scan-only
+            
+            # Organize by priority and create splits
+            python dataset_organizer.py --all
+            
+            # Only organize, don't create splits
+            python dataset_organizer.py --organize
+            
+            # Resume from previous run
+            python dataset_organizer.py --all --resume
+            
+            # Use file copying instead of symlinks
+            python dataset_organizer.py --all --no-symlink
+                    """
+                )
     parser.add_argument('--bucket-path', default='/datasets/marauder-do-bucket',
                        help='Path to DO bucket mount (default: /datasets/marauder-do-bucket)')
     parser.add_argument('--species-mapping', default='config/species_mapping.yaml',
