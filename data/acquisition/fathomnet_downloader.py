@@ -206,14 +206,15 @@ class FathomNetDownloader:
             # Fetch image details
             for img_data in concept_images:
                 img_dict = vars(img_data)
-                print(img_dict.get('boundingBoxes'))
+                bboxes = [asdict(box) for box in img_dict.get('boundingBoxes')]
+                print(bboxes)
                 try:
                     if img_dict and img_dict.get('url'):
                         all_images.append({
                             'uuid': img_dict.get('uuid'),
                             'url': img_dict.get('url'),
                             'concept': concept,
-                            'boundingBoxes': dict(img_dict.get('boundingBoxes')),
+                            'boundingBoxes': bboxes,
                             'metadata': {
                                 'latitude': img_dict.get('latitude'),
                                 'longitude': img_dict.get('longitude'),
