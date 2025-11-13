@@ -212,7 +212,7 @@ class FathomNetDownloader:
                             'uuid': img_dict.get('uuid'),
                             'url': img_dict.get('url'),
                             'concept': concept,
-                            'boundingBoxes': img_dict.get('boundingBoxes'),
+                            'boundingBoxes': vars(img_dict.get('boundingBoxes')),
                             'metadata': {
                                 'latitude': img_dict.get('latitude'),
                                 'longitude': img_dict.get('longitude'),
@@ -383,7 +383,7 @@ class FathomNetDownloader:
     def process_image(self, img: Dict) -> Dict:
         """Process a single image - download and create label"""
         result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0}
-        
+
         print(img)
         
         # Define output paths with matching names
