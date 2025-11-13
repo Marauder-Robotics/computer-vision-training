@@ -294,6 +294,7 @@ class FathomNetDownloader:
         # Get boxes
         print(img)
         boxes = img.get('boundingBoxes')
+        print('Boxes for: {img.get('uuid')}')
         print(boxes)
 
         # Get image dimensions
