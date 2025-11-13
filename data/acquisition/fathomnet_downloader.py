@@ -236,7 +236,19 @@ class FathomNetDownloader:
                             'uuid': img_dict.get('uuid'),
                             'url': img_dict.get('url'),
                             'concept': concept,
-                            'metadata': img_dict.pop('url').pop('uuid')
+                            'metadata': {
+                                'latitude': img_dict.get('latitude'),
+                                'longitude': img_dict.get('longitude'),
+                                'width': img_dict.get('width'),
+                                'height': img_dict.get('height'),
+                                'depth_meters': img_dict.get('depth_meters'),
+                                'sailinity': img_dict.get('salinity'),
+                                'temperatureCelsius': img_dict.get('temperatureCelsius'),
+                                'oxygenMlL': img_dict.get('oxygenMlL'),
+                                'pressureDbar': img_dict.get('pressureDbar'),
+                                'timestamp': img_dict.get('timestamp'),
+                                'contributors': img_dict.get('contributorsEmail')
+                            }
                         })
                 except Exception as e:
                     logger.warning(f"Failed to get image {concept_images.index(img_data)}: {e}")
