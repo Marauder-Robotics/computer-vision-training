@@ -206,6 +206,7 @@ class FathomNetDownloader:
             # Fetch image details
             for img_data in concept_images:
                 img_dict = vars(img_data)
+                print(type(img_dict.get('boundingBoxes')))
                 try:
                     if img_dict and img_dict.get('url'):
                         all_images.append({
