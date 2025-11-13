@@ -4,7 +4,7 @@
 
 1. Start machine in a gradient notebook
 2. Mount DigitalOcean bucket in data sources
-3. In terminal:
+3. Manual in terminal:
     A. Install required global packages
         - sudo apt install python3-venv
         - sudo apt install gh
@@ -17,6 +17,17 @@
             - Authenticate via web browser/https
         - git config --global --edit
         - sudo git clone https://github.com/Marauder-Robotics/computer-vision-training.git
+    D. Setup paperspace environment
+        - chmod +x /notebooks/computer-vision-training/scripts/paperspace_init.sh
+        - /notebooks/computer-vision-training/scripts/paperspace_init.sh
+   Via Jupyter:
+    A. Clone repo via git UI
+    B. Setup paperspace environment
+        - chmod +x /notebooks/computer-vision-training/scripts/paperspace_init.sh
+        - /notebooks/computer-vision-training/scripts/paperspace_init.sh
+4. Run training scripts
+    A. - chomd +x path_to_script
+    B. - path_to_script
 
 ## Editing Codebase
 
