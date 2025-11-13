@@ -27,7 +27,7 @@ from fathomnet.api import boundingboxes, images
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - {%(pathname)s:%(lineno)d} - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -384,6 +384,8 @@ class FathomNetDownloader:
         """Process a single image - download and create label"""
         result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0}
         
+        print(img)
+        
         # Define output paths with matching names
         safe_name = img.get('uuid').replace('/', '_')
         img_path = self.images_path / f"{safe_name}.jpg"
@@ -396,9 +398,10 @@ class FathomNetDownloader:
                 if not self.download_image(img, img_path):
                     return result
                 
-            # Save metadata
-            with open(md_path, 'w') as f:
-                f.write('\n'.join(img.get('metadata')))
+            # Save metadata if not exists
+            if not md_path.exists():
+                with open(md_path, 'w') as f:
+                    f.write('\n'.join(img.get('metadata')))
             
             # Create YOLO labels
             yolo_lines = self.convert_to_yolo(img)
