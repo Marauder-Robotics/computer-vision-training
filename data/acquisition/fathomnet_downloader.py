@@ -296,6 +296,7 @@ class FathomNetDownloader:
 
         # Get image dimensions
         metadata = img.get('metadata')
+        print(metadata)
         width = metadata.get('width', 0)
         height = metadata.get('metadata').get('height', 0)
         
