@@ -296,9 +296,8 @@ class FathomNetDownloader:
 
         # Get image dimensions
         metadata = img.get('metadata')
-        print(metadata.get('width', 0))
         width = metadata.get('width', 0)
-        height = metadata.get('metadata').get('height', 0)
+        height = metadata.get('height', 0)
         
         if width == 0 or height == 0:
             logger.warning(f"Invalid image dimensions for {img.get('uuid')}")
@@ -306,7 +305,6 @@ class FathomNetDownloader:
         
         yolo_lines = []
         for box in boxes:
-            print(box)
             # Get bounding box coordinates
             x = box.get('x', 0)
             y = box.get('y', 0)
