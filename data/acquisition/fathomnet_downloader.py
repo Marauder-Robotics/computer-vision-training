@@ -27,7 +27,7 @@ from fathomnet.api import boundingboxes, images
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s'
+    format='%(asctime)s - {%(filename)s:%(lineno)d} - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -292,7 +292,9 @@ class FathomNetDownloader:
     def convert_to_yolo(self, img: Dict) -> List[str]:
         """Convert bounding boxes to YOLO format"""
         # Get boxes
+        print(img)
         boxes = img.get('boundingBoxes')
+        print(boxes)
 
         # Get image dimensions
         metadata = img.get('metadata')
@@ -317,7 +319,13 @@ class FathomNetDownloader:
             
             # Get class ID
             concept = box.get('concept', 'undefined')
+            alt_concept = box.get('altConcept', 'undefined')
             class_id = self.get_class_id(concept)
+            class_id_alt = self.get_class_id(concept)
+
+            # check if altConcept returns a more important class ID, lower class IDs more important
+            if class_id_alt < class_id:
+                class_id = class_id_alt
             
             # Convert to YOLO format (normalized center x, y, width, height)
             cx = (x + w/2) / width
@@ -370,7 +378,7 @@ class FathomNetDownloader:
                     result = future.result()
                     if result['success']:
                         stats['images'] += 1
-                        stats['metadata'] += 1
+                        stats['metadata'] += result['metadata']
                         stats['labels'] += result['labels']
                         self.processed_images.add(result['uuid'])
                     else:
@@ -383,9 +391,7 @@ class FathomNetDownloader:
     
     def process_image(self, img: Dict) -> Dict:
         """Process a single image - download and create label"""
-        result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0}
-
-        print(img)
+        result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0, 'metadata': 0}
 
         # Define output paths with matching names
         safe_name = img.get('uuid').replace('/', '_')
@@ -403,7 +409,8 @@ class FathomNetDownloader:
             if not md_path.exists():
                 with open(md_path, 'w') as f:
                     f.write('\n'.join(img.get('metadata')))
-            
+                result['metadata'] = 1
+
             # Create YOLO labels
             yolo_lines = self.convert_to_yolo(img)
             if yolo_lines:
