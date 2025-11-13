@@ -295,9 +295,8 @@ class FathomNetDownloader:
         boxes = img.get('boundingBoxes')
 
         # Get image dimensions
-        metadata = img.get('metadata')
-        width = metadata.get('width', 0)
-        height = metadata.get('height', 0)
+        width = img.get('metadata').get('width', 0)
+        height = img.get('metadata').get('height', 0)
         
         if width == 0 or height == 0:
             logger.warning(f"Invalid image dimensions for {img.get('uuid')}")
