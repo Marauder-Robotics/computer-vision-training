@@ -1,0 +1,291 @@
+# Marauder CV Pipeline - Training Configuration
+
+# General Training Settings
+general:
+  project_name: "marauder-marine-cv"
+  seed: 42
+  device: "cuda"  # cuda, cpu, or cuda:0
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: true  # AMP for faster training
+
+# 1: SSL Pretraining (MoCo V3)
+ssl_pretraining:
+  enabled: true
+  model: "moco_v3"
+  backbone: "resnet50"
+  embedding_dim: 2048
+  queue_size: 65536
+  temperature: 0.2
+  momentum: 0.999
+  
+  # Training parameters
+  epochs: 100
+  batch_size: 256
+  learning_rate: 0.03
+  weight_decay: 0.0001
+  optimizer: "sgd"
+  scheduler: "cosine"
+  warmup_epochs: 10
+  
+  # Augmentation
+  augmentation:
+    input_size: [224, 224]
+    color_jitter: [0.4, 0.4, 0.4, 0.1]
+    gaussian_blur: 0.5
+    solarization: 0.2
+    
+  # Data
+  min_images: 50000
+  checkpoint_interval: 10
+
+# 2: Baseline YOLO Training
+baseline_yolo:
+  enabled: true
+  model_size: "yolov8m"  # Can be: n, s, m, l, x
+  use_ssl_backbone: true
+  ssl_checkpoint: "checkpoints/ssl/best_moco.pth"
+  
+  # Training parameters
+  epochs: 300
+  batch_size: 16
+  imgsz: 640
+  learning_rate: 0.01
+  weight_decay: 0.0005
+  optimizer: "SGD"
+  momentum: 0.937
+  warmup_epochs: 3
+  warmup_momentum: 0.8
+  warmup_bias_lr: 0.1
+  
+  # Data augmentation
+  augmentation:
+    hsv_h: 0.015
+    hsv_s: 0.7
+    hsv_v: 0.4
+    degrees: 0.0
+    translate: 0.1
+    scale: 0.5
+    shear: 0.0
+    perspective: 0.0
+    flipud: 0.0
+    fliplr: 0.5
+    mosaic: 1.0
+    mixup: 0.0
+    
+  # Model settings
+  pretrained: true
+  freeze_backbone_epochs: 0
+  close_mosaic_epochs: 10
+  
+  # Evaluation
+  val_interval: 10
+  save_period: 10
+  patience: 50
+
+# 3: Active Learning
+active_learning:
+  enabled: true
+  strategy: "uncertainty_sampling"  # uncertainty, entropy, margin
+  num_samples: 2000
+  min_confidence: 0.3
+  max_confidence: 0.7
+  
+  # Selection criteria
+  criteria:
+    low_confidence: 0.4
+    high_iou_overlap: 0.8
+    class_imbalance: true
+    critical_species_priority: true
+    
+  # Output for Mindy Services
+  export_format: "coco"
+  include_thumbnails: true
+  annotation_guidelines: true
+
+# 4: Critical Species Specialization
+critical_species:
+  enabled: true
+  base_model: "checkpoints/baseline/best.pt"
+  
+  # Oversampling
+  oversampling:
+    enabled: true
+    critical_species_ratio: 3.0  # 3x more critical species
+    min_examples_per_class: 100
+    
+  # Training
+  epochs: 200
+  batch_size: 16
+  imgsz: 640
+  learning_rate: 0.005  # Lower LR for fine-tuning
+  
+  # Hard negative mining
+  hard_negative_mining:
+    enabled: true
+    iterations: 3
+    false_positive_threshold: 0.5
+    min_fp_per_iteration: 100
+    augmentation_multiplier: 5
+
+# 5a: Ensemble Training- Nano
+ensemble_training:
+  enabled: true
+  base_model: "checkpoints/critical_species/best.pt"
+  num_variants: 3
+  
+  variants:
+    high_recall:
+      conf_threshold: 0.15
+      iou_threshold: 0.4
+      augmentation_strength: "heavy"
+      class_weights: "balanced"
+      
+    balanced:
+      conf_threshold: 0.25
+      iou_threshold: 0.5
+      augmentation_strength: "medium"
+      class_weights: "default"
+      
+    high_precision:
+      conf_threshold: 0.4
+      iou_threshold: 0.6
+      augmentation_strength: "light"
+      class_weights: "critical_heavy"
+      
+  # Training parameters
+  epochs: 150
+  batch_size: 16
+  imgsz: 640
+  
+  # Weighted NMS
+  weighted_nms:
+    enabled: true
+    iou_threshold: 0.5
+    weights: [0.3, 0.4, 0.3]  # recall, balanced, precision
+
+# 6: Multi-Scale Training
+multiscale_training:
+  enabled: true
+  base_models: "checkpoints/ensemble/"
+  
+  # Dynamic resolution
+  resolutions: [480, 512, 576, 640, 704, 768]
+  scale_variance: 0.5
+  
+  # Training
+  epochs: 100
+  batch_size: 12  # Lower due to larger images
+  
+  # Multi-scale testing
+  test_scales: [0.5, 0.75, 1.0, 1.25, 1.5]
+
+# 7: TTA and Calibration
+tta_calibration:
+  enabled: true
+  
+  # Test-Time Augmentation
+  tta:
+    horizontal_flip: true
+    vertical_flip: false
+    rotations: [0, 90, 180, 270]
+    scales: [0.9, 1.0, 1.1]
+    brightness_range: [0.9, 1.1]
+    
+  # Calibration
+  calibration:
+    method: "temperature_scaling"  # temperature_scaling, platt_scaling
+    critical_species_only: true
+    calibration_set_size: 1000
+    
+  # Threshold optimization
+  threshold_optimization:
+    enabled: true
+    metric: "f1"  # f1, precision, recall
+    per_class: true
+    critical_species_priority: true
+
+# 8: TensorRT Export
+tensorrt_export:
+  enabled: true
+  precision: "fp16"  # fp32, fp16, int8
+  
+  # Optimization
+  workspace_size: 4  # GB
+  max_batch_size: 1
+  dla_core: -1  # -1 for GPU, 0-1 for DLA on Xavier/Orin
+  
+  # Quantization (for INT8)
+  calibration:
+    enabled: false
+    num_images: 500
+    cache_file: "calibration.cache"
+
+# Shore Model Training (YOLOv11)
+shore_model:
+  enabled: true
+  model_size: "yolov11x"  # Use largest for accuracy
+  dual_ensemble: true
+  
+  # Uses best YOLOv8x + YOLOv11x variants
+  yolov8_models:
+    - "checkpoints/ensemble/recall/best.pt"
+    - "checkpoints/ensemble/balanced/best.pt"
+    - "checkpoints/ensemble/precision/best.pt"
+    
+  # Training parameters (same structure as YOLOv8)
+  epochs: 300
+  batch_size: 16
+  imgsz: 640
+  
+  # Ensemble inference
+  voting_method: "weighted"  # weighted, majority, unanimous
+  weights: [0.15, 0.2, 0.15, 0.2, 0.2, 0.1]  # 6 models total
+
+# Energy Budget (Nano)
+energy_budget:
+  max_daily_wh: 40
+  target_fps: 5
+  cameras: 4
+  capture_duration_seconds: 30
+  captures_per_hour: 2
+  
+  # Model energy profiles (Wh per day)
+  models:
+    yolov8n: 6.7
+    yolov8s: 10.9
+    yolov8m: 14.4  # Primary target
+    yolov8l: 18.0  # Alternative
+    yolov8x: 24.3
+
+# Checkpointing
+checkpointing:
+  enabled: true
+  save_interval: 10  # epochs
+  keep_last_n: 3
+  save_best_only: false
+  
+# Logging
+logging:
+  training_logger:
+    enabled: true
+    project: "marauder-cv"
+    save_to_bucket: true
+    bucket_path: "/datasets/marauder-do-bucket/training/logs"
+    
+  tensorboard:
+    enabled: true
+    log_dir: "/datasets/marauder-do-bucket/training/tensorboard/"
+    
+  console:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+    
+# Data Paths
+paths:
+  data_root: "/notebooks/marauder-do-bucket"
+  fathomnet: "/notebooks/marauder-do-bucket/images/fathomnet"
+  deepfish: "/notebooks/marauder-do-bucket/images/deepfish"
+  marauder: "/notebooks/marauder-do-bucket/images/marauder"
+  outputs: "/notebooks/marauder-do-bucket/training/outputs"
+  checkpoints: "/notebooks/marauder-do-bucket/training/checkpoints"
+  logs: "/notebooks/marauder-do-bucket/training/logs"
