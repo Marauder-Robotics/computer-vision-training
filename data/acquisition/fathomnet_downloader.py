@@ -190,30 +190,7 @@ class FathomNetDownloader:
         except Exception as e:
             logger.error(f"Error fetching concepts: {e}")
             return []
-    
-    def get_bounding_boxes_by_uuid(self, uuid: str) -> List[Dict]:
-        """Get all bounding boxes for a specific concept"""
-        try:
-            boxes = boundingboxes.find_by_uuid(uuid)
-            if not boxes:
-                return []
-            
-            # Convert to dict format
-            box_dicts = []
-            for box in boxes:
-                try:
-                    box_dict = vars(box) if hasattr(box, '__dict__') else box
-                    if isinstance(box_dict, dict):
-                        box_dicts.append(box_dict)
-                except Exception as e:
-                    logger.debug(f"Error converting box: {e}")
-                    continue
-            
-            return box_dicts
-        except Exception as e:
-            logger.error(f"Error fetching bounding boxes for {uuid}: {e}")
-            return []
-        
+
     def get_concept_images(self, concept: str) -> List[Dict]:
         """Fetch image metadata for a concept from FathomNet"""
         all_images = []
@@ -235,6 +212,7 @@ class FathomNetDownloader:
                             'uuid': img_dict.get('uuid'),
                             'url': img_dict.get('url'),
                             'concept': concept,
+                            'boundingBoxes': img_dict.get('boundingBoxes'),
                             'metadata': {
                                 'latitude': img_dict.get('latitude'),
                                 'longitude': img_dict.get('longitude'),
@@ -310,8 +288,11 @@ class FathomNetDownloader:
         # Default to last class (undefined/unknown)
         return len(self.class_to_idx) - 1 if self.class_to_idx else 36
     
-    def convert_to_yolo(self, boxes: List[Dict], img: Dict) -> List[str]:
+    def convert_to_yolo(self, img: Dict) -> List[str]:
         """Convert bounding boxes to YOLO format"""
+        # Get boxes
+        boxes = img.get('boundingBoxes')
+
         # Get image dimensions
         metadata = img.get('metadata')
         width = metadata.get('width', 0)
@@ -420,8 +401,7 @@ class FathomNetDownloader:
                 f.write('\n'.join(img.get('metadata')))
             
             # Create YOLO labels
-            boxes = self.get_bounding_boxes_by_uuid(img.get('uuid'))
-            yolo_lines = self.convert_to_yolo(boxes, img)
+            yolo_lines = self.convert_to_yolo(img)
             if yolo_lines:
                 with open(label_path, 'w') as f:
                     f.write('\n'.join(yolo_lines))
