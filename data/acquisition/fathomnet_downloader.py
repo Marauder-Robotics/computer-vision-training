@@ -305,7 +305,6 @@ class FathomNetDownloader:
         
         yolo_lines = []
         for box in boxes:
-            logger.info(f"Box for: {img.get('uuid')}")
             print(box)
             # Get bounding box coordinates
             x = box.get('x', 0)
