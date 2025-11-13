@@ -75,7 +75,7 @@ class FathomNetDownloader:
             'total_labels': 0,
             'total_failed': 0,
             'concepts_processed': [],
-            'start_time': datetime.utcnow().isoformat()
+            'start_time': datetime.now(timezone.utc).isoformat()
         }
         
         # Load species mapping
@@ -227,6 +227,8 @@ class FathomNetDownloader:
             # Fetch image details
             for img_data in concept_images:
                 img_dict = vars(img_data)
+                print(type(img_dict))
+                print(img_dict)
                 try:
                     if img_dict and img_dict.get('url'):
                         all_images.append({
@@ -490,7 +492,7 @@ class FathomNetDownloader:
             'processed_concepts': list(self.processed_concepts),
             'processed_images': list(self.processed_images)[:1000],  # Save last 1000 to limit size
             'stats': self.stats,
-            'timestamp': datetime.now(datetime.timezone.utc).isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
         with open(self.checkpoint_file, 'w') as f:
             json.dump(checkpoint, f, indent=2)
@@ -514,7 +516,7 @@ class FathomNetDownloader:
         report = {
             'config': asdict(self.config),
             'stats': self.stats,
-            'end_time': datetime.utcnow().isoformat(),
+            'end_time': datetime.now(timezone.utc).isoformat(),
             'class_mapping': {k: v for k, v in self.class_to_idx.items()},
             'total_concepts': len(self.processed_concepts),
             'total_images': self.stats['total_downloaded'],
