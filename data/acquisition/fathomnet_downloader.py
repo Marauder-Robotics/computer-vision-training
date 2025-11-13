@@ -213,7 +213,7 @@ class FathomNetDownloader:
                             'uuid': img_dict.get('uuid'),
                             'url': img_dict.get('url'),
                             'concept': concept,
-                            'boundingBoxes': asdict(img_dict.get('boundingBoxes')),
+                            'boundingBoxes': dict(img_dict.get('boundingBoxes')),
                             'metadata': {
                                 'latitude': img_dict.get('latitude'),
                                 'longitude': img_dict.get('longitude'),
