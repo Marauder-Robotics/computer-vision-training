@@ -292,7 +292,6 @@ class FathomNetDownloader:
     def convert_to_yolo(self, img: Dict) -> List[str]:
         """Convert bounding boxes to YOLO format"""
         # Get boxes
-        print(img)
         boxes = img.get('boundingBoxes')
         logger.info(f"Boxes for: {img.get('uuid')}")
         print(boxes)
