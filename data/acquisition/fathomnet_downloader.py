@@ -47,8 +47,9 @@ class DownloadConfig:
     
     # Paths
     bucket_path: str = DO_BUCKET_PATH
-    images_dir: str = "images/fathomnet"
+    images_dir: str = "images/fathomnet/images"
     labels_dir: str = "images/fathomnet/labels"
+    data_dir: str = "images/fathomnet/metadata"
     
     # Species mapping file
     species_mapping_file: str = "config/species_mapping.yaml"
@@ -63,8 +64,10 @@ class FathomNetDownloader:
         # Setup paths
         self.images_path = Path(self.config.bucket_path) / self.config.images_dir
         self.labels_path = Path(self.config.bucket_path) / self.config.labels_dir
+        self.data_path = Path(self.config.bucket_path) / self.config.data_dir
         self.images_path.mkdir(parents=True, exist_ok=True)
         self.labels_path.mkdir(parents=True, exist_ok=True)
+        self.data_path.mkdir(parents=True, exist_ok=True)
         
         # Statistics tracking
         self.stats = {
@@ -186,10 +189,10 @@ class FathomNetDownloader:
             logger.error(f"Error fetching concepts: {e}")
             return []
     
-    def get_concept_bounding_boxes(self, concept: str) -> List[Dict]:
+    def get_bounding_boxes_by_uuid(self, uuid: str) -> List[Dict]:
         """Get all bounding boxes for a specific concept"""
         try:
-            boxes = boundingboxes.find_by_concept(concept)
+            boxes = boundingboxes.find_by_uuid(uuid)
             if not boxes:
                 return []
             
@@ -206,20 +209,42 @@ class FathomNetDownloader:
             
             return box_dicts
         except Exception as e:
-            logger.error(f"Error fetching bounding boxes for {concept}: {e}")
+            logger.error(f"Error fetching bounding boxes for {uuid}: {e}")
             return []
-    
-    def get_image_info(self, image_uuid: str) -> Optional[Dict]:
-        """Get image metadata by UUID"""
+        
+    def get_concept_images(self, concept: str) -> List[Dict]:
+        """Fetch image metadata for a concept from FathomNet"""
+        all_images = []
+
         try:
-            img = images.find_by_uuid(image_uuid)
-            if img:
-                img_dict = vars(img) if hasattr(img, '__dict__') else img
-                return img_dict
-            return None
+            # Search for images with this concept
+            logger.info(f"Searching for images of: {concept}")
+
+            # Get bounding boxes for the concept (includes image info)
+            concept_images = images.find_by_concept(concept)
+            logger.info(f"{len(concept_images)} images for: {concept}")
+            
+            # Fetch image details
+            for img_data in concept_images:
+                img_dict = vars(img_data)
+                try:
+                    if img_dict and img_dict.get('url'):
+                        all_images.append({
+                            'uuid': img_dict.get('uuid'),
+                            'url': img_dict.get('url'),
+                            'concept': concept,
+                            'metadata': img_dict.pop('url').pop('uuid')
+                        })
+                except Exception as e:
+                    logger.warning(f"Failed to get image {concept_images.index(img_data)}: {e}")
+                    continue
+
+            logger.info(f"Found {len(all_images)} images for {concept}")
+            return all_images
+
         except Exception as e:
-            logger.debug(f"Error fetching image {image_uuid}: {e}")
-            return None
+            logger.error(f"Failed to query concept {concept}: {e}")
+            return []
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
     def download_image(self, img_info: Dict, output_path: Path) -> bool:
@@ -245,7 +270,7 @@ class FathomNetDownloader:
                     img.thumbnail(max_size, Image.Resampling.LANCZOS)
                 
                 # Save with compression
-                img.save(output_path, optimize=True, quality=85)
+                img.save(output_path, optimize=True, quality=75)
             
             return True
             
@@ -271,14 +296,15 @@ class FathomNetDownloader:
         # Default to last class (undefined/unknown)
         return len(self.class_to_idx) - 1 if self.class_to_idx else 36
     
-    def convert_to_yolo(self, boxes: List[Dict], img_info: Dict) -> List[str]:
+    def convert_to_yolo(self, boxes: List[Dict], img: Dict) -> List[str]:
         """Convert bounding boxes to YOLO format"""
         # Get image dimensions
-        width = img_info.get('width', 0)
-        height = img_info.get('height', 0)
+        metadata = img.get('metadata')
+        width = metadata.get('width', 0)
+        height = metadata.get('metadata').get('height', 0)
         
         if width == 0 or height == 0:
-            logger.warning(f"Invalid image dimensions for {img_info.get('uuid')}")
+            logger.warning(f"Invalid image dimensions for {img.get('uuid')}")
             return []
         
         yolo_lines = []
@@ -312,45 +338,34 @@ class FathomNetDownloader:
             yolo_lines.append(f"{class_id} {cx:.6f} {cy:.6f} {norm_w:.6f} {norm_h:.6f}")
         
         return yolo_lines
-    
+        
     def process_concept(self, concept: str) -> Dict[str, int]:
         """Process a single concept - download images and create labels"""
         stats = {'images': 0, 'labels': 0, 'failed': 0}
         
         # Get bounding boxes for concept
-        boxes = self.get_concept_bounding_boxes(concept)
-        if not boxes:
-            logger.warning(f"No bounding boxes found for {concept}")
+        images = self.get_concept_images(concept)
+        if not images:
+            logger.warning(f"No images found for {concept}")
             return stats
-        
-        # Group boxes by image UUID
-        image_boxes = {}
-        for box in boxes:
-            img_uuid = box.get('image_uuid')
-            if not img_uuid:
-                continue
-            if img_uuid not in image_boxes:
-                image_boxes[img_uuid] = []
-            image_boxes[img_uuid].append(box)
-        
-        logger.info(f"Processing {len(image_boxes)} images for {concept}")
+                
+        logger.info(f"Processing {len(images)} images for {concept}")
         
         # Process each image
         with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
             futures = []
             
-            for img_uuid, img_boxes in image_boxes.items():
+            for image in images:
                 # Skip if already processed
-                if img_uuid in self.processed_images:
+                if image.get('uuid') in self.processed_images:
                     continue
                 
                 # Get image info
-                img_info = self.get_image_info(img_uuid)
-                if not img_info or not img_info.get('url'):
+                if not image.get('url'):
                     continue
                 
                 # Submit processing task
-                future = executor.submit(self.process_image, img_info, img_boxes)
+                future = executor.submit(self.process_image, image)
                 futures.append(future)
             
             # Collect results
@@ -359,6 +374,7 @@ class FathomNetDownloader:
                     result = future.result()
                     if result['success']:
                         stats['images'] += 1
+                        stats['metadata'] += 1
                         stats['labels'] += result['labels']
                         self.processed_images.add(result['uuid'])
                     else:
@@ -369,23 +385,29 @@ class FathomNetDownloader:
         
         return stats
     
-    def process_image(self, img_info: Dict, boxes: List[Dict]) -> Dict:
+    def process_image(self, img: Dict) -> Dict:
         """Process a single image - download and create label"""
-        result = {'success': False, 'uuid': img_info['uuid'], 'labels': 0}
+        result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0}
         
         # Define output paths with matching names
-        safe_name = img_info['uuid'].replace('/', '_')
+        safe_name = img.get('uuid').replace('/', '_')
         img_path = self.images_path / f"{safe_name}.jpg"
+        md_path = self.data_path / f"{safe_name}.txt"
         label_path = self.labels_path / f"{safe_name}.txt"
         
         try:
             # Download image if not exists
             if not img_path.exists():
-                if not self.download_image(img_info, img_path):
+                if not self.download_image(img, img_path):
                     return result
+                
+            # Save metadata
+            with open(md_path, 'w') as f:
+                f.write('\n'.join(img.get('metadata')))
             
             # Create YOLO labels
-            yolo_lines = self.convert_to_yolo(boxes, img_info)
+            boxes = self.get_bounding_boxes_by_uuid(img.get('uuid'))
+            yolo_lines = self.convert_to_yolo(boxes, img)
             if yolo_lines:
                 with open(label_path, 'w') as f:
                     f.write('\n'.join(yolo_lines))
@@ -394,7 +416,7 @@ class FathomNetDownloader:
             result['success'] = True
             
         except Exception as e:
-            logger.error(f"Error processing image {img_info['uuid']}: {e}")
+            logger.error(f"Error processing image {img.get('uuid')}: {e}")
         
         return result
     
@@ -431,6 +453,7 @@ class FathomNetDownloader:
                 # Update global stats
                 self.stats['total_downloaded'] += stats['images']
                 self.stats['total_labels'] += stats['labels']
+                self.stats['total_metadata_files'] += stats['metadata']
                 self.stats['total_failed'] += stats['failed']
                 
                 # Mark as processed
@@ -456,6 +479,7 @@ class FathomNetDownloader:
         logger.info("Download completed!")
         logger.info(f"Total images: {self.stats['total_downloaded']}")
         logger.info(f"Total labels: {self.stats['total_labels']}")
+        logger.info(f"Total metadata files: {self.stats['total_metadata_files']}")
         logger.info(f"Total failed: {self.stats['total_failed']}")
         logger.info(f"Concepts processed: {len(self.processed_concepts)}")
         logger.info("="*50)
@@ -466,7 +490,7 @@ class FathomNetDownloader:
             'processed_concepts': list(self.processed_concepts),
             'processed_images': list(self.processed_images)[:1000],  # Save last 1000 to limit size
             'stats': self.stats,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(datetime.timezone.utc).isoformat()
         }
         with open(self.checkpoint_file, 'w') as f:
             json.dump(checkpoint, f, indent=2)
@@ -532,3 +556,47 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+'''
+    ### Old get concepts, for reference only ###
+
+    def get_concept_images(self, concept: str) -> List[Dict]:
+        """Fetch image metadata for a concept from FathomNet"""
+        all_images = []
+
+        try:
+            # Search for images with this concept
+            logger.info(f"Searching for images of: {concept}")
+
+            # Get bounding boxes for the concept (includes image info)
+            concept_images = images.find_by_concept(concept)
+            logger.info(f"{len(concept_images)} images for: {concept}")
+            
+            # Fetch image details
+            for img_data in concept_images:
+                img_dict = vars(img_data)
+                try:
+                    if img_dict and img_dict.get('url'):
+                        all_images.append({
+                            'uuid': img_dict.get('uuid'),
+                            'url': img_dict.get('url'),
+                            'concept': concept,
+                            'metadata': {
+                                'latitude': img_dict.get('latitude'),
+                                'longitude': img_dict.get('longitude'),
+                                'depth_meters': img_dict.get('depth_meters'),
+                                'timestamp': img_dict.get('lastUpdatedTimestamp'),
+                                'contributors': img_dict.get('contributorsEmail')
+                            }
+                        })
+                except Exception as e:
+                    logger.warning(f"Failed to get image {concept_images.index(img_data)}: {e}")
+                    continue
+
+            logger.info(f"Found {len(all_images)} images for {concept}")
+            return all_images
+
+        except Exception as e:
+            logger.error(f"Failed to query concept {concept}: {e}")
+            return []
+'''

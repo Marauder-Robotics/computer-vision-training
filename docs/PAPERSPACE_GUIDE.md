@@ -20,11 +20,13 @@
     D. Setup paperspace environment
         - chmod +x /notebooks/computer-vision-training/scripts/paperspace_init.sh
         - /notebooks/computer-vision-training/scripts/paperspace_init.sh
+        - cd ~/computer-vision-training && source venv/bin/activate
    Via Jupyter:
     A. Clone repo via git UI
     B. Setup paperspace environment
         - chmod +x /notebooks/computer-vision-training/scripts/paperspace_init.sh
         - /notebooks/computer-vision-training/scripts/paperspace_init.sh
+        - cd ~/computer-vision-training && source venv/bin/activate
 4. Run training scripts
     A. - chomd +x path_to_script
     B. - path_to_script
