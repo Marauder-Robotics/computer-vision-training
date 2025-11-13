@@ -375,7 +375,7 @@ class FathomNetDownloader:
                     result = future.result()
                     if result['success']:
                         stats['images'] += 1
-                        stats['metadata'] += result['metadata']
+                        stats['metadatas'] += result['metadatas']
                         stats['labels'] += result['labels']
                         self.processed_images.add(result['uuid'])
                     else:
@@ -388,7 +388,7 @@ class FathomNetDownloader:
     
     def process_image(self, img: Dict) -> Dict:
         """Process a single image - download and create label"""
-        result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0, 'metadata': 0}
+        result = {'success': False, 'uuid': img.get('uuid'), 'labels': 0, 'metadatas': 0}
 
         # Define output paths with matching names
         safe_name = img.get('uuid').replace('/', '_')
@@ -406,7 +406,7 @@ class FathomNetDownloader:
             if not md_path.exists():
                 with open(md_path, 'w') as f:
                     f.write('\n'.join(img.get('metadata')))
-                result['metadata'] = 1
+                result['metadatas'] = 1
 
             # Create YOLO labels
             yolo_lines = self.convert_to_yolo(img)
@@ -455,7 +455,7 @@ class FathomNetDownloader:
                 # Update global stats
                 self.stats['total_downloaded'] += stats['images']
                 self.stats['total_labels'] += stats['labels']
-                self.stats['total_metadata_files'] += stats['metadata']
+                self.stats['total_metadata_files'] += stats['metadatas']
                 self.stats['total_failed'] += stats['failed']
                 
                 # Mark as processed
