@@ -497,7 +497,7 @@ class FathomNetDownloader:
         }
         with open(self.checkpoint_file, 'w') as f:
             json.dump(checkpoint, f, indent=2)
-        logger.debug("Checkpoint saved")
+        logger.info("Checkpoint saved")
     
     def _load_checkpoint(self):
         """Load checkpoint if exists"""
