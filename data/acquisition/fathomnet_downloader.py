@@ -34,7 +34,6 @@ logger = logging.getLogger(__name__)
 # DO bucket path
 DO_BUCKET_PATH = os.environ.get('DO_BUCKET_PATH', '/datasets/marauder-do-bucket')
 
-
 @dataclass
 class DownloadConfig:
     """Configuration for FathomNet downloader"""
@@ -42,7 +41,7 @@ class DownloadConfig:
     target_concepts: List[str] = None
     
     # Resumption settings
-    checkpoint_interval: int = 100
+    checkpoint_interval: int = 5
     batch_size: int = 100
     max_workers: int = 10
     
