@@ -384,6 +384,8 @@ class FathomNetDownloader:
                     logger.error(f"Error processing future: {e}")
                     stats['failed'] += 1
         
+        logger.info(f'Processed {stats['images']} for {concept}')
+        
         return stats
     
     def process_image(self, img: Dict) -> Dict:
