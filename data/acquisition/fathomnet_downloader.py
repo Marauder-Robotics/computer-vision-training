@@ -342,7 +342,7 @@ class FathomNetDownloader:
         
     def process_concept(self, concept: str) -> Dict[str, int]:
         """Process a single concept - download images and create labels"""
-        stats = {'images': 0, 'labels': 0, 'failed': 0}
+        stats = {'images': 0, 'labels': 0, 'metadatas':0, 'failed': 0}
         
         # Get bounding boxes for concept
         images = self.get_concept_images(concept)
@@ -407,8 +407,6 @@ class FathomNetDownloader:
                 with open(md_path, 'w') as f:
                     f.write('\n'.join(img.get('metadata')))
                 result['metadatas'] = 1
-            else:
-                result['metadatas'] = 0
 
             # Create YOLO labels
             yolo_lines = self.convert_to_yolo(img)
