@@ -407,6 +407,8 @@ class FathomNetDownloader:
                 with open(md_path, 'w') as f:
                     f.write('\n'.join(img.get('metadata')))
                 result['metadatas'] = 1
+            else:
+                result['metadatas'] = 0
 
             # Create YOLO labels
             yolo_lines = self.convert_to_yolo(img)
